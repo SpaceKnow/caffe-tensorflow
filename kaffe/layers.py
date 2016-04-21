@@ -3,61 +3,64 @@ import numbers
 from .shapes import *
 from collections import namedtuple
 
-LAYER_DESCRIPTORS =  {
+LAYER_DESCRIPTORS = {
 
     # Caffe Types
-    'AbsVal'                    : shape_identity,
-    'Accuracy'                  : shape_scalar,
-    'ArgMax'                    : shape_not_implemented,
-    'BNLL'                      : shape_not_implemented,
-    'Concat'                    : shape_concat,
-    'ContrastiveLoss'           : shape_scalar,
-    'Convolution'               : shape_convolution,
-    'Deconvolution'             : shape_not_implemented,
-    'Data'                      : shape_data,
-    'Dropout'                   : shape_identity,
-    'DummyData'                 : shape_data,
-    'EuclideanLoss'             : shape_scalar,
-    'Eltwise'                   : shape_identity,
-    'Exp'                       : shape_identity,
-    'Flatten'                   : shape_not_implemented,
-    'HDF5Data'                  : shape_data,
-    'HDF5Output'                : shape_identity,
-    'HingeLoss'                 : shape_scalar,
-    'Im2col'                    : shape_not_implemented,
-    'ImageData'                 : shape_data,
-    'InfogainLoss'              : shape_scalar,
-    'InnerProduct'              : shape_inner_product,
-    'Input'                     : shape_data,
-    'LRN'                       : shape_identity,
-    'MemoryData'                : shape_mem_data,
-    'MultinomialLogisticLoss'   : shape_scalar,
-    'MVN'                       : shape_not_implemented,
-    'Pooling'                   : shape_pool,
-    'Power'                     : shape_identity,
-    'ReLU'                      : shape_identity,
-    'Sigmoid'                   : shape_identity,
-    'SigmoidCrossEntropyLoss'   : shape_scalar,
-    'Silence'                   : shape_not_implemented,
-    'Softmax'                   : shape_identity,
-    'SoftmaxWithLoss'           : shape_scalar,
-    'Split'                     : shape_not_implemented,
-    'Slice'                     : shape_not_implemented,
-    'TanH'                      : shape_identity,
-    'WindowData'                : shape_not_implemented,
-    'Threshold'                 : shape_identity,
+    'AbsVal': shape_identity,
+    'Accuracy': shape_scalar,
+    'ArgMax': shape_not_implemented,
+    'BNLL': shape_not_implemented,
+    'Concat': shape_concat,
+    'ContrastiveLoss': shape_scalar,
+    'Convolution': shape_convolution,
+    'Crop': shape_not_implemented,
+    'Deconvolution': shape_not_implemented,
+    'Data': shape_data,
+    'Dropout': shape_identity,
+    'DummyData': shape_data,
+    'EuclideanLoss': shape_scalar,
+    'Eltwise': shape_identity,
+    'Exp': shape_identity,
+    'Flatten': shape_not_implemented,
+    'HDF5Data': shape_data,
+    'HDF5Output': shape_identity,
+    'HingeLoss': shape_scalar,
+    'Im2col': shape_not_implemented,
+    'ImageData': shape_data,
+    'InfogainLoss': shape_scalar,
+    'InnerProduct': shape_inner_product,
+    'Input': shape_data,
+    'LRN': shape_identity,
+    'MemoryData': shape_mem_data,
+    'MultinomialLogisticLoss': shape_scalar,
+    'MVN': shape_not_implemented,
+    'Pooling': shape_pool,
+    'Power': shape_identity,
+    'ReLU': shape_identity,
+    'Sigmoid': shape_identity,
+    'SigmoidCrossEntropyLoss': shape_scalar,
+    'Silence': shape_not_implemented,
+    'Softmax': shape_identity,
+    'SoftmaxWithLoss': shape_scalar,
+    'Split': shape_not_implemented,
+    'Slice': shape_not_implemented,
+    'TanH': shape_identity,
+    'WindowData': shape_not_implemented,
+    'Threshold': shape_identity,
 
     # Internal Types
-    'Implicit'                  : shape_identity
+    'Implicit': shape_identity
 }
 
 LAYER_TYPES = LAYER_DESCRIPTORS.keys()
+
 
 def generate_layer_type_enum():
     types = {t:t for t in LAYER_TYPES}
     return type('LayerType', (), types)
 
 LayerType = generate_layer_type_enum()
+
 
 class NodeKind(LayerType):
     @staticmethod
@@ -74,12 +77,15 @@ class NodeKind(LayerType):
         except NotImplementedError:
             raise KaffeError('Output shape computation not implemented for type: %s'%node.kind)
 
-class NodeDispatchError(KaffeError): pass
+
+class NodeDispatchError(KaffeError):
+    pass
+
 
 class NodeDispatch(object):
     @staticmethod
     def get_handler_name(node_kind):
-        if len(node_kind)<=4:
+        if len(node_kind) <= 4:
             # A catch-all for things like ReLU and tanh
             return node_kind.lower()
         # Convert from CamelCase to under_scored
@@ -93,6 +99,7 @@ class NodeDispatch(object):
             return getattr(self, name)
         except AttributeError:
             raise NodeDispatchError('No handler found for node kind: %s (expected: %s)'%(node_kind, name))
+
 
 class LayerAdapter(object):
     def __init__(self, layer, kind):
@@ -139,8 +146,8 @@ class LayerAdapter(object):
 
 KernelParameters = namedtuple('KernelParameters',
                               ['kernel_h',
-                              'kernel_w',
-                              'stride_h',
-                              'stride_w',
-                              'pad_h',
-                              'pad_w'])
+                               'kernel_w',
+                               'stride_h',
+                               'stride_w',
+                               'pad_h',
+                               'pad_w'])

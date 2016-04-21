@@ -1,5 +1,6 @@
 from kaffe.tensorflow import Network
 
+
 class GoogleNet(Network):
     def setup(self):
         (self.feed('data')

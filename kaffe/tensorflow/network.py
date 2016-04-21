@@ -3,6 +3,7 @@ import tensorflow as tf
 
 DEFAULT_PADDING = 'SAME'
 
+
 def layer(op):
     def layer_decorated(self, *args, **kwargs):
         # Automatically set a name if not provided.
@@ -23,6 +24,7 @@ def layer(op):
         # Return self for chained calls.
         return self
     return layer_decorated
+
 
 class Network(object):
     def __init__(self, inputs, trainable=True):

@@ -1,10 +1,12 @@
 from kaffe.tensorflow import Network
 
+
 class AlexNet(Network):
-    batch_size  = 500
-    scale_size  = 227
-    crop_size   = 227
-    isotropic   = True
+    batch_size = 500
+    scale_size = 227
+    crop_size = 227
+    isotropic = True
+
     def setup(self):
         (self.feed('data')
              .conv(11, 11, 96, 4, 4, padding='VALID', name='conv1')

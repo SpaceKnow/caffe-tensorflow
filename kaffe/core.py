@@ -1,5 +1,4 @@
 import os
-import sys
 import numpy as np
 from google.protobuf import text_format
 
@@ -28,16 +27,17 @@ if PYCAFFE_AVAILABLE:
         print_stderr('Failed to import dist protobuf code. Using failsafe.')
         print_stderr('Custom layers might not work.')
 
+
 class Node(object):
     def __init__(self, name, kind, layer=None):
-        self.name         = name
-        self.kind         = kind
-        self.layer        = LayerAdapter(layer, kind) if layer else None
-        self.parents      = []
-        self.children     = []
-        self.data         = None
+        self.name = name
+        self.kind = kind
+        self.layer = LayerAdapter(layer, kind) if layer else None
+        self.parents = []
+        self.children = []
+        self.data = None
         self.output_shape = None
-        self.metadata     = {}
+        self.metadata = {}
 
     def add_parent(self, parent_node):
         assert parent_node not in self.parents
@@ -100,6 +100,7 @@ class Graph(object):
         unsorted_nodes = list(self.nodes)
         temp_marked = set()
         perm_marked = set()
+
         def visit(node):
             if node in temp_marked:
                 raise KaffeError('Graph is not a DAG.')
@@ -132,6 +133,7 @@ class Graph(object):
             s.append('{:<20} {:<30} {:>20} {:>20}'.format(node.kind,
                 node.name, data_shape, out_shape))
         return '\n'.join(s)
+
 
 class DataInjector(object):
     def __init__(self, def_path, data_path):
@@ -166,10 +168,10 @@ class DataInjector(object):
                 dims = blob.shape.dim
                 c_o, c_i, h, w = map(int, [1]*(4-len(dims))+list(dims))
             else:
-                c_o  = blob.num
-                c_i  = blob.channels
-                h    = blob.height
-                w    = blob.width
+                c_o = blob.num
+                c_i = blob.channels
+                h = blob.height
+                w = blob.width
             data = np.array(blob.data, dtype=np.float32).reshape(c_o, c_i, h, w)
             transformed.append(data)
         return transformed
@@ -183,9 +185,9 @@ class DataInjector(object):
         # potential for future issues.
         # The Caffe-backend does not suffer from this problem.
         data = list(data)
-        squeeze_indices = [1] # Squeeze biases.
-        if node.kind==NodeKind.InnerProduct:
-            squeeze_indices.append(0) # Squeeze FC.
+        squeeze_indices = [1]  # Squeeze biases.
+        if node.kind == NodeKind.InnerProduct:
+            squeeze_indices.append(0)  # Squeeze FC.
         for idx in squeeze_indices:
             data[idx] = np.squeeze(data[idx])
         return data
@@ -197,6 +199,7 @@ class DataInjector(object):
                 node.data = self.adjust_parameters(node, data)
             else:
                 print_stderr('Ignoring parameters for non-existent layer: %s'%layer_name)
+
 
 class DataReshaper(object):
     def __init__(self, mapping):
@@ -215,7 +218,7 @@ class DataReshaper(object):
         try:
             parent = node.get_only_parent()
             s = parent.output_shape
-            return (s[IDX_H]>1 or s[IDX_W]>1)
+            return s[IDX_H] > 1 or s[IDX_W] > 1
         except KaffeError:
             return False
 
