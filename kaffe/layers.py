@@ -67,7 +67,6 @@ class NodeKind(LayerType):
     def map_raw_kind(kind):
         if kind in LAYER_TYPES:
             return kind
-        return None
 
     @staticmethod
     def compute_output_shape(node):
@@ -75,7 +74,7 @@ class NodeKind(LayerType):
             val = LAYER_DESCRIPTORS[node.kind](node)
             return val
         except NotImplementedError:
-            raise KaffeError('Output shape computation not implemented for type: %s'%node.kind)
+            raise KaffeError('Output shape computation not implemented for type: %s' % node.kind)
 
 
 class NodeDispatchError(KaffeError):
@@ -98,7 +97,7 @@ class NodeDispatch(object):
         try:
             return getattr(self, name)
         except AttributeError:
-            raise NodeDispatchError('No handler found for node kind: %s (expected: %s)'%(node_kind, name))
+            raise NodeDispatchError('No handler found for node kind: %s (expected: %s)' % (node_kind, name))
 
 
 class LayerAdapter(object):
@@ -113,7 +112,7 @@ class LayerAdapter(object):
         try:
             return getattr(self.layer, name)
         except AttributeError:
-            raise NodeDispatchError('Caffe parameters not found for layer kind: %s'%(self.kind))
+            raise NodeDispatchError('Caffe parameters not found for layer kind: %s' % self.kind)
 
     @staticmethod
     def get_kernel_value(scalar, repeated, idx, default=None):
