@@ -25,7 +25,12 @@ def get_strided_kernel_output_shape(node, round_func):
     return make_shape(input_shape[IDX_N], c, o_h, o_w)
 
 
-def shape_not_implemented():
+def shape_not_implemented(node):
+    """
+    In case that shape is not implemented
+
+    :param node: node, it's necessary, because of the kaffe/layers.py
+    """
     raise NotImplementedError
 
 
@@ -34,7 +39,12 @@ def shape_identity(node):
     return node.parents[0].output_shape
 
 
-def shape_scalar():
+def shape_scalar(node):
+    """
+    Shape scalar
+
+    :param node: node, it's necessary, because of the kaffe/layers.py
+    """
     return make_shape(1, 1, 1, 1)
 
 
