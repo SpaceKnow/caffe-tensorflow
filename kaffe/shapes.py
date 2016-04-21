@@ -25,16 +25,16 @@ def get_strided_kernel_output_shape(node, round_func):
     return make_shape(input_shape[IDX_N], c, o_h, o_w)
 
 
-def shape_not_implemented(node):
+def shape_not_implemented():
     raise NotImplementedError
 
 
 def shape_identity(node):
-    assert len(node.parents)>0
+    assert len(node.parents) > 0
     return node.parents[0].output_shape
 
 
-def shape_scalar(node):
+def shape_scalar():
     return make_shape(1, 1, 1, 1)
 
 

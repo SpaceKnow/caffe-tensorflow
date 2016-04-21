@@ -358,6 +358,7 @@ class GraphBuilder(object):
             DataInjector(self.def_path, self.data_path).inject(graph)
         return graph
 
+
 class NodeMapper(NodeDispatch):
     def __init__(self, graph):
         self.graph = graph
@@ -371,15 +372,15 @@ class NodeMapper(NodeDispatch):
         input_nodes = self.graph.get_input_nodes()
         nodes = [t for t in nodes if t not in input_nodes]
         # Remove implicit nodes.
-        nodes = [t for t in nodes if t.kind!=NodeKind.Implicit]
+        nodes = [t for t in nodes if t.kind != NodeKind.Implicit]
         # Decompose DAG into chains.
         chains = []
         for node in nodes:
             attach_to_chain = None
-            if len(node.parents)==1:
+            if len(node.parents) == 1:
                 parent = node.get_only_parent()
                 for chain in chains:
-                    if chain[-1]==parent:
+                    if chain[-1] == parent:
                         # Node is part of an existing chain.
                         attach_to_chain = chain
                         break

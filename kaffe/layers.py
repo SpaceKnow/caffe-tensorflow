@@ -122,10 +122,10 @@ class LayerAdapter(object):
         if repeated:
             if isinstance(repeated, numbers.Number):
                 return repeated
-            if len(repeated)==1:
+            if len(repeated) == 1:
                 # Same value applies to all spatial dimensions
                 return int(repeated[0])
-            assert idx<len(repeated)
+            assert idx < len(repeated)
             # Extract the value for the given spatial dimension
             return repeated[idx]
         if default is None:
