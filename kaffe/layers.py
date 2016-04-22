@@ -2,6 +2,7 @@ import re
 import numbers
 from .shapes import *
 from collections import namedtuple
+import traceback
 
 LAYER_DESCRIPTORS = {
 
@@ -14,7 +15,7 @@ LAYER_DESCRIPTORS = {
     'ContrastiveLoss': shape_scalar,
     'Convolution': shape_convolution,
     'Crop': shape_not_implemented,
-    'Deconvolution': shape_not_implemented,
+    'Deconvolution': shape_deconvolution,
     'Data': shape_data,
     'Dropout': shape_identity,
     'DummyData': shape_data,
@@ -45,6 +46,7 @@ LAYER_DESCRIPTORS = {
     'Split': shape_not_implemented,
     'Slice': shape_not_implemented,
     'TanH': shape_identity,
+    'Unpooling': shape_not_implemented,
     'WindowData': shape_not_implemented,
     'Threshold': shape_identity,
 
@@ -56,7 +58,7 @@ LAYER_TYPES = LAYER_DESCRIPTORS.keys()
 
 
 def generate_layer_type_enum():
-    types = {t:t for t in LAYER_TYPES}
+    types = {t: t for t in LAYER_TYPES}
     return type('LayerType', (), types)
 
 LayerType = generate_layer_type_enum()
@@ -74,6 +76,7 @@ class NodeKind(LayerType):
             val = LAYER_DESCRIPTORS[node.kind](node)
             return val
         except NotImplementedError:
+            print traceback.print_exc()
             raise KaffeError('Output shape computation not implemented for type: %s' % node.kind)
 
 
@@ -108,10 +111,14 @@ class LayerAdapter(object):
     @property
     def parameters(self):
         name = NodeDispatch.get_handler_name(self.kind)
+        # Hack, because deconvolution layers has convolution params
+        if name == "deconvolution":
+            name = "convolution"
         name = '_'.join((name, 'param'))
         try:
             return getattr(self.layer, name)
         except AttributeError:
+            print traceback.print_exc()
             raise NodeDispatchError('Caffe parameters not found for layer kind: %s' % self.kind)
 
     @staticmethod
@@ -133,7 +140,7 @@ class LayerAdapter(object):
 
     @property
     def kernel_parameters(self):
-        assert self.kind in (NodeKind.Convolution, NodeKind.Pooling)
+        assert self.kind in (NodeKind.Convolution, NodeKind.Pooling, NodeKind.Deconvolution)
         params = self.parameters
         k_h = self.get_kernel_value(params.kernel_h, params.kernel_size, 0)
         k_w = self.get_kernel_value(params.kernel_w, params.kernel_size, 1)

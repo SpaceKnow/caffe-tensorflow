@@ -227,7 +227,7 @@ class DataReshaper(object):
             if node.data is None:
                 continue
             data = node.data[IDX_WEIGHTS]
-            if (node.kind==NodeKind.InnerProduct) and self.has_spatial_parent(node):
+            if (node.kind == NodeKind.InnerProduct) and self.has_spatial_parent(node):
                 # The FC layer connected to the spatial layer needs to be
                 # re-wired to match the new spatial ordering.
                 in_shape = node.get_only_parent().output_shape
@@ -245,6 +245,7 @@ class DataReshaper(object):
                     node.data[IDX_WEIGHTS] = node.reshaped_data
                     del node.reshaped_data
 
+
 class GraphBuilder(object):
     def __init__(self, def_path, data_path=None, phase='test'):
         self.def_path = def_path
@@ -258,7 +259,7 @@ class GraphBuilder(object):
             text_format.Merge(def_file.read(), self.params)
 
     def filter_layers(self, layers):
-        phase_map = {0:'train', 1:'test'}
+        phase_map = {0: 'train', 1: 'test'}
         filtered_layer_names = set()
         filtered_layers = []
         for layer in layers:
@@ -267,12 +268,12 @@ class GraphBuilder(object):
                 phase = phase_map[layer.include[0].phase]
             if len(layer.exclude):
                 phase = phase_map[1-layer.include[0].phase]
-            exclude = (phase!=self.phase)
+            exclude = (phase != self.phase)
             # Dropout layers appear in a fair number of Caffe
             # test-time networks. These are just ignored. We'll
             # filter them out here.
-            if (not exclude) and (phase=='test'):
-                exclude = (layer.type==LayerType.Dropout)
+            if (not exclude) and (phase == 'test'):
+                exclude = (layer.type == LayerType.Dropout)
             if not exclude:
                 filtered_layers.append(layer)
                 # Guard against dupes.
@@ -283,7 +284,7 @@ class GraphBuilder(object):
     def make_node(self, layer):
         kind = NodeKind.map_raw_kind(layer.type)
         if kind is None:
-            raise KaffeError('Unknown layer type encountered: %s'%layer.type)
+            raise KaffeError('Unknown layer type encountered: %s' % layer.type)
         return Node(layer.name, kind, layer=layer)
 
     def make_input_nodes(self):
@@ -294,7 +295,7 @@ class GraphBuilder(object):
         if len(nodes):
             input_dim = map(int, self.params.input_dim)
             if not input_dim:
-                if len(self.params.input_shape)>0:
+                if len(self.params.input_shape) > 0:
                     input_dim = map(int, self.params.input_shape[0].dim)
                 else:
                     raise KaffeError('Dimensions for input not specified.')
@@ -305,10 +306,10 @@ class GraphBuilder(object):
     def fuse_relus(self, nodes):
         fused_nodes = []
         for node in nodes:
-            if node.kind!=NodeKind.ReLU:
+            if node.kind != NodeKind.ReLU:
                 continue
             parent = node.get_only_parent()
-            if len(parent.children)!=1:
+            if len(parent.children) != 1:
                 # We can only fuse this ReLU if its parent's
                 # value isn't used by any other node.
                 continue
@@ -333,13 +334,13 @@ class GraphBuilder(object):
         for layer in layers:
             node = graph.get_node(layer.name)
             for parent_name in layer.bottom:
-                assert parent_name!=layer.name
+                assert parent_name != layer.name
                 parent_node = node_outputs.get(parent_name)
-                if (parent_node is None) or (parent_node==node):
+                if (parent_node is None) or (parent_node == node):
                     parent_node = graph.get_node(parent_name)
                 node.add_parent(parent_node)
             for child_name in layer.top:
-                if child_name==layer.name:
+                if child_name == layer.name:
                     continue
                 if child_name in graph:
                     # This is an "in-place operation" that overwrites an existing node.

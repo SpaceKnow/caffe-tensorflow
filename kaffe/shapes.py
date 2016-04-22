@@ -1,8 +1,14 @@
 import math
+import logging
+
 from .base import *
 
 
+logger = logging.getLogger(__name__)
+
+
 def make_shape(n, c, h, w):
+    logger.debug("Output shape of the layer is: %s", (n, c, h, w))
     return n, c, h, w
 
 
@@ -12,13 +18,36 @@ def get_filter_output_shape(i_h, i_w, params, round_func):
     return int(round_func(o_h)), int(round_func(o_w))
 
 
-def get_strided_kernel_output_shape(node, round_func):
+def get_reverse_filter_output_shape(i_h, i_w, params, round_func):
+    """
+    Compute output shape for the reverse filter
+
+    :param i_h: height of the input
+    :param i_w: width of the input
+    :param params: namedtuple KernelParameters
+    :param round_func: function to round values
+
+    :return: output_height, output_width
+    """
+    o_h = ((i_h + 2 * params.pad_h) * params.stride_h) + params.kernel_h - params.stride_h
+    o_w = ((i_w + 2 * params.pad_w) * params.stride_w) + params.kernel_w - params.stride_w
+    return int(round_func(o_h)), int(round_func(o_w))
+
+
+def get_strided_kernel_output_shape(node, round_func, deconvolution=False):
     assert node.layer is not None
+    logger.info("computing shape for %s layer", node.kind)
     input_shape = node.get_only_parent().output_shape
-    o_h, o_w = get_filter_output_shape(input_shape[IDX_H],
-                                       input_shape[IDX_W],
-                                       node.layer.kernel_parameters,
-                                       round_func)
+    if deconvolution:
+        o_h, o_w = get_reverse_filter_output_shape(input_shape[IDX_H],
+                                                   input_shape[IDX_W],
+                                                   node.layer.kernel_parameters,
+                                                   round_func)
+    else:
+        o_h, o_w = get_filter_output_shape(input_shape[IDX_H],
+                                           input_shape[IDX_W],
+                                           node.layer.kernel_parameters,
+                                           round_func)
     params = node.layer.parameters
     has_c_o = hasattr(params, 'num_output')
     c = params.num_output if has_c_o else input_shape[IDX_C]
@@ -88,6 +117,17 @@ def shape_concat(node):
 
 def shape_convolution(node):
     return get_strided_kernel_output_shape(node, math.floor)
+
+
+def shape_deconvolution(node):
+    """
+    Compute shape for the deconvolution layer.
+
+    :param node: class Node representing deconvolution layer
+
+    :return: output shape of the deconvolution layer
+    """
+    return get_strided_kernel_output_shape(node, math.ceil, deconvolution=True)
 
 
 def shape_pool(node):
