@@ -123,11 +123,23 @@ def shape_deconvolution(node):
     """
     Compute shape for the deconvolution layer.
 
-    :param node: class Node representing deconvolution layer
+    :param node: class Node representing the deconvolution layer
 
     :return: output shape of the deconvolution layer
     """
     return get_strided_kernel_output_shape(node, math.ceil, deconvolution=True)
+
+
+def shape_crop(node):
+    """
+    Compute shape for the crop layer.
+
+    :param node: class Node representing the crop layer
+
+    :return: output shape of the crop layer
+    """
+    n, c, h, w = node.parents[1].output_shape
+    return make_shape(n, c, h, w)
 
 
 def shape_pool(node):
@@ -138,5 +150,4 @@ def shape_inner_product(node):
     input_shape = node.get_only_parent().output_shape
     return make_shape(input_shape[IDX_N],
                       node.layer.parameters.num_output,
-                      1,
-                      1)
+                      1, 1)

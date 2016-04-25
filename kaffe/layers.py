@@ -14,7 +14,7 @@ LAYER_DESCRIPTORS = {
     'Concat': shape_concat,
     'ContrastiveLoss': shape_scalar,
     'Convolution': shape_convolution,
-    'Crop': shape_not_implemented,
+    'Crop': shape_crop,
     'Deconvolution': shape_deconvolution,
     'Data': shape_data,
     'Dropout': shape_identity,

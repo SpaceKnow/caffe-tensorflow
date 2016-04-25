@@ -52,8 +52,8 @@ class Node(object):
             child_node.parents.append(self)
 
     def get_only_parent(self):
-        if len(self.parents)!=1:
-            raise KaffeError('Node (%s) expected to have 1 parent. Found %s.'%(self, len(self.parents)))
+        if len(self.parents) != 1:
+            raise KaffeError('Node (%s) expected to have 1 parent. Found %s.' % (self, len(self.parents)))
         return self.parents[0]
 
     @property
@@ -68,15 +68,16 @@ class Node(object):
         return self.data[IDX_WEIGHTS].shape
 
     def __str__(self):
-        return '[%s] %s'%(self.kind, self.name)
+        return '[%s] %s' % (self.kind, self.name)
 
     def __repr__(self):
-        return '%s (0x%x)'%(self.name, id(self))
+        return '%s (0x%x)' % (self.name, id(self))
+
 
 class Graph(object):
     def __init__(self, nodes=None, name=None):
         self.nodes = nodes or []
-        self.node_lut = {node.name:node for node in self.nodes}
+        self.node_lut = {node.name: node for node in self.nodes}
         self.name = name
 
     def add_node(self, node):
@@ -185,10 +186,16 @@ class DataInjector(object):
         # potential for future issues.
         # The Caffe-backend does not suffer from this problem.
         data = list(data)
+        logger.debug("data length:", len(data))
         squeeze_indices = [1]  # Squeeze biases.
         if node.kind == NodeKind.InnerProduct:
             squeeze_indices.append(0)  # Squeeze FC.
         for idx in squeeze_indices:
+            logger.debug("index %s", idx)
+            logger.debug("data length %s", len(data))
+            logger.debug("data shape %s", data[0].shape)
+            logger.debug("data idx shape %s", data[idx].shape)
+            # logger.debug(data[idx])
             data[idx] = np.squeeze(data[idx])
         return data
 
@@ -196,9 +203,10 @@ class DataInjector(object):
         for layer_name, data in self.params:
             if layer_name in graph:
                 node = graph.get_node(layer_name)
+                logger.debug(layer_name)
                 node.data = self.adjust_parameters(node, data)
             else:
-                print_stderr('Ignoring parameters for non-existent layer: %s'%layer_name)
+                print_stderr('Ignoring parameters for non-existent layer: %s' % layer_name)
 
 
 class DataReshaper(object):
@@ -209,7 +217,7 @@ class DataReshaper(object):
         try:
             return self.mapping[ndim]
         except KeyError:
-            raise KaffeError('Ordering not found for %d dimensional tensor.'%ndim)
+            raise KaffeError('Ordering not found for %d dimensional tensor.' % ndim)
 
     def transpose(self, data):
         return data.transpose(self.map(data.ndim))

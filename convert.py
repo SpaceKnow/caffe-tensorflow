@@ -41,7 +41,7 @@ def main():
                 src_out.write(transformer.transform_source())
         logger.info('Done.')
     except KaffeError as err:
-        logger.info('Error encountered: %s'%err)
+        logger.info('Error encountered: %s' % err)
         exit(-1)
 
     logger.info("finished running %s", program)

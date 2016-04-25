@@ -22,7 +22,7 @@ class ImageNet(object):
         h, w, c = np.shape(img)
         scale_size = self.model.scale_size
         crop_size = self.model.crop_size
-        assert c==3
+        assert c == 3
         if self.model.isotropic:
             aspect = float(w)/h
             if w<h:
@@ -79,10 +79,10 @@ def main():
     if model_index >= len(examples.MODELS):
         print('Invalid model index. Options are:')
         for idx, model in enumerate(examples.MODELS):
-            print('%s: %s'%(idx, model))
+            print('%s: %s' % (idx, model))
         exit(-1)  
     model = examples.MODELS[model_index]
-    print('Using model: %s'%(model))
+    print('Using model: %s' % (model))
     test_imagenet(model, *args[:3])
 
 if __name__ == '__main__':
