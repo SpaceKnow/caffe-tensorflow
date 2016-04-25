@@ -6,6 +6,8 @@ from .layers import *
 from .core import print_stderr
 
 try:
+    import matplotlib
+    matplotlib.use('Agg')
     import caffe
     PYCAFFE_AVAILABLE = True
 except ImportError:

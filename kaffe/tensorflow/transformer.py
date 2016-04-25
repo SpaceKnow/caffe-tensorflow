@@ -1,14 +1,23 @@
+import logging
+
 import numpy as np
+
 from . import network
 from ..base import *
 from ..core import GraphBuilder, DataReshaper, NodeMapper
 
 
+logger = logging.getLogger(__name__)
+
+
 class TensorFlowNode(object):
     def __init__(self, op, *args, **kwargs):
         self.op = op
+        logger.debug("TF node operation: %s", op)
         self.args = args
+        logger.debug("TF node args: %s", args)
         self.kwargs = list(kwargs.items())
+        logger.debug("TF node kwargs: %s", kwargs)
 
     def format(self, arg):
         return "'%s'" % arg if isinstance(arg, basestring) else str(arg)
@@ -65,7 +74,7 @@ class TensorFlowMapper(NodeMapper):
         (c_o, c_i, h, w) = node.data_shape
         (kernel_params, kwargs) = self.get_kernel_params(node)
         group = node.parameters.group
-        if group!=1:
+        if group != 1:
             kwargs['group'] = group
         assert kernel_params.kernel_h == h
         assert kernel_params.kernel_w == w
@@ -77,6 +86,37 @@ class TensorFlowMapper(NodeMapper):
                                       kernel_params.stride_h,
                                       kernel_params.stride_w,
                                       **kwargs)
+
+    def map_deconvolution(self, node):
+        """
+        Map the deconvolutional node to TensorFlowNode.
+
+        :param node: Node object
+        """
+        (c_o, c_i, h, w) = node.data_shape
+        (kernel_params, kwargs) = self.get_kernel_params(node)
+        group = node.parameters.group
+        if group != 1:
+            kwargs['group'] = group
+        assert kernel_params.kernel_h == h
+        assert kernel_params.kernel_w == w
+        return TensorFlowNode(node,
+                              'deconv',
+                              kernel_params.kernel_h,
+                              kernel_params.kernel_w,
+                              c_o,
+                              kernel_params.stride_h,
+                              kernel_params.stride_w,
+                              **kwargs)
+
+
+    def map_crop(self, node):
+        """
+        Map the crop node to TensorFlowNode.
+
+        :param node: Node object
+        """
+        return TensorFlowNode('crop')
 
     def map_relu(self, node):
         return TensorFlowNode('relu')
