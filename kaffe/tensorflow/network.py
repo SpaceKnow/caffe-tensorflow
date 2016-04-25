@@ -9,9 +9,9 @@ def layer(op):
         # Automatically set a name if not provided.
         name = kwargs.setdefault('name', self.get_unique_name(op.__name__))
         # Figure out the layer inputs.
-        if len(self.inputs)==0:
-            raise RuntimeError('No input variables found for layer %s.'%name)
-        elif len(self.inputs)==1:
+        if len(self.inputs) == 0:
+            raise RuntimeError('No input variables found for layer %s.' % name)
+        elif len(self.inputs) == 1:
             layer_input = self.inputs[0]
         else:
             layer_input = list(self.inputs)

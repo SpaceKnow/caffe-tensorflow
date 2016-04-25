@@ -43,15 +43,17 @@ def get_padding_type(kernel_params, input_shape, output_shape):
     https://github.com/Yangqing/caffe2/blob/master/caffe2/proto/caffe2_legacy.proto
     """
     k_h, k_w, s_h, s_w, p_h, p_w = kernel_params
-    s_o_h = np.ceil(input_shape[IDX_H]/float(s_h))
-    s_o_w = np.ceil(input_shape[IDX_W]/float(s_w))
+    s_o_h = np.ceil(input_shape[IDX_H] / float(s_h))
+    s_o_w = np.ceil(input_shape[IDX_W] / float(s_w))
     if (output_shape[IDX_H] == s_o_h) and (output_shape[IDX_W] == s_o_w):
         return 'SAME'
-    v_o_h = np.ceil((input_shape[IDX_H]-k_h+1.0)/float(s_h))
-    v_o_w = np.ceil((input_shape[IDX_W]-k_w+1.0)/float(s_w))
+    v_o_h = np.ceil((input_shape[IDX_H] - k_h + 1.0) / float(s_h))
+    v_o_w = np.ceil((input_shape[IDX_W] - k_w + 1.0) / float(s_w))
     if (output_shape[IDX_H] == v_o_h) and (output_shape[IDX_W] == v_o_w):
         return 'VALID'
-    return None
+    # Return network.DEFAULT_PADDING for case that padding is not compatible
+    # with TensorFlow
+    return network.DEFAULT_PADDING
 
 
 class TensorFlowMapper(NodeMapper):
@@ -100,8 +102,7 @@ class TensorFlowMapper(NodeMapper):
             kwargs['group'] = group
         assert kernel_params.kernel_h == h
         assert kernel_params.kernel_w == w
-        return TensorFlowNode(node,
-                              'deconv',
+        return TensorFlowNode('deconv',
                               kernel_params.kernel_h,
                               kernel_params.kernel_w,
                               c_o,
