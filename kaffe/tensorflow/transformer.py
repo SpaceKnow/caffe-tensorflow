@@ -95,16 +95,20 @@ class TensorFlowMapper(NodeMapper):
 
         :param node: Node object
         """
-        (c_o, c_i, h, w) = node.data_shape
+        channels_output, channels_input, height, width = node.data_shape
+        batch_size, c_o, output_height, output_width = node.output_shape
         (kernel_params, kwargs) = self.get_kernel_params(node)
-        assert kernel_params.kernel_h == h
-        assert kernel_params.kernel_w == w
+        assert kernel_params.kernel_h == height
+        assert kernel_params.kernel_w == width
+        assert channels_output == c_o
         return TensorFlowNode('deconv',
                               kernel_params.kernel_h,
                               kernel_params.kernel_w,
-                              c_o,
+                              channels_output,
                               kernel_params.stride_h,
                               kernel_params.stride_w,
+                              output_height,
+                              output_width,
                               **kwargs)
 
 
