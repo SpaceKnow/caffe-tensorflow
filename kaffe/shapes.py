@@ -18,20 +18,20 @@ def get_filter_output_shape(i_h, i_w, params, round_func):
     return int(round_func(o_h)), int(round_func(o_w))
 
 
-def get_reverse_filter_output_shape(i_h, i_w, params, round_func):
+def get_reverse_filter_output_shape(i_h, i_w, params):
     """
-    Compute output shape for the reverse filter
+    Compute output shape for the reverse filter. Computation is based on:
+    https://github.com/longjon/caffe/blob/25c2e3fdc7a27ec00893bd0335ac42e53ff2c7aa/src/caffe/layers/deconv_layer.cpp#L12
 
     :param i_h: height of the input
     :param i_w: width of the input
     :param params: namedtuple KernelParameters
-    :param round_func: function to round values
 
     :return: output_height, output_width
     """
-    o_h = ((i_h + 2 * params.pad_h) * params.stride_h) + params.kernel_h - params.stride_h
-    o_w = ((i_w + 2 * params.pad_w) * params.stride_w) + params.kernel_w - params.stride_w
-    return int(round_func(o_h)), int(round_func(o_w))
+    o_h = ((i_h - 1) * params.stride_h) + params.kernel_h - 2 * params.pad_h
+    o_w = ((i_w - 1) * params.stride_w) + params.kernel_w - 2 * params.pad_w
+    return o_h, o_w
 
 
 def get_strided_kernel_output_shape(node, round_func, deconvolution=False):
@@ -41,8 +41,7 @@ def get_strided_kernel_output_shape(node, round_func, deconvolution=False):
     if deconvolution:
         o_h, o_w = get_reverse_filter_output_shape(input_shape[IDX_H],
                                                    input_shape[IDX_W],
-                                                   node.layer.kernel_parameters,
-                                                   round_func)
+                                                   node.layer.kernel_parameters)
     else:
         o_h, o_w = get_filter_output_shape(input_shape[IDX_H],
                                            input_shape[IDX_W],
