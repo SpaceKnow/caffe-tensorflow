@@ -75,6 +75,20 @@ class Network(object):
         assert padding in ('SAME', 'VALID')
 
     @layer
+    def deconv(self, input, k_h, k_w, c_o, s_h, s_w, name, padding=DEFAULT_PADDING):
+        """
+        Deconvolution network implementation in TensorFlow.
+        """
+        self.validate_padding(padding)
+        c_i = input.get_shape()[-1]
+        convolve = lambda i, k: tf.nn.conv2d_transpose(i, k, [1, s_h, s_w, 1], padding=padding)
+        with tf.variable_scope(name) as scope:
+            kernel = self.make_var('weights', shape=[k_h, k_w, c_i / group, c_o])
+            biases = self.make_var('biases', [c_o])
+            conv = convolve(input, kernel)
+            return tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list(), name=scope.name)
+
+    @layer
     def conv(self, input, k_h, k_w, c_o, s_h, s_w, name, relu=True, padding=DEFAULT_PADDING, group=1):
         self.validate_padding(padding)
         c_i = input.get_shape()[-1]
