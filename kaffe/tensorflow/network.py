@@ -83,7 +83,7 @@ class Network(object):
         c_i = input.get_shape()[-1]
         convolve = lambda i, k: tf.nn.conv2d_transpose(i, k, [1, s_h, s_w, 1], padding=padding)
         with tf.variable_scope(name) as scope:
-            kernel = self.make_var('weights', shape=[k_h, k_w, c_i / group, c_o])
+            kernel = self.make_var('weights', shape=[k_h, k_w, c_i, c_o])
             biases = self.make_var('biases', [c_o])
             conv = convolve(input, kernel)
             return tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list(), name=scope.name)

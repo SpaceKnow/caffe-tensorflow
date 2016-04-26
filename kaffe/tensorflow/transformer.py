@@ -97,9 +97,6 @@ class TensorFlowMapper(NodeMapper):
         """
         (c_o, c_i, h, w) = node.data_shape
         (kernel_params, kwargs) = self.get_kernel_params(node)
-        group = node.parameters.group
-        if group != 1:
-            kwargs['group'] = group
         assert kernel_params.kernel_h == h
         assert kernel_params.kernel_w == w
         return TensorFlowNode('deconv',
