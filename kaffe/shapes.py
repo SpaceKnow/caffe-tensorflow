@@ -13,8 +13,8 @@ def make_shape(n, c, h, w):
 
 
 def get_filter_output_shape(i_h, i_w, params, round_func):    
-    o_h = (i_h + 2*params.pad_h - params.kernel_h)/float(params.stride_h) + 1
-    o_w = (i_w + 2*params.pad_w - params.kernel_w)/float(params.stride_w) + 1
+    o_h = (i_h + 2 * params.pad_h - params.kernel_h)/float(params.stride_h) + 1
+    o_w = (i_w + 2 * params.pad_w - params.kernel_w)/float(params.stride_w) + 1
     return int(round_func(o_h)), int(round_func(o_w))
 
 

@@ -42,7 +42,7 @@ def get_padding_type(kernel_params, input_shape, output_shape):
     how the padding edge-cases are handled. These are described here:
     https://github.com/Yangqing/caffe2/blob/master/caffe2/proto/caffe2_legacy.proto
     """
-    k_h, k_w, s_h, s_w, p_h, p_w = kernel_params
+    k_h, k_w, s_h, s_w, p_h, p_w, _ = kernel_params
     s_o_h = np.ceil(input_shape[IDX_H] / float(s_h))
     s_o_w = np.ceil(input_shape[IDX_W] / float(s_w))
     if (output_shape[IDX_H] == s_o_h) and (output_shape[IDX_W] == s_o_w):
@@ -63,8 +63,12 @@ class TensorFlowMapper(NodeMapper):
         input_shape = node.get_only_parent().output_shape
         padding = get_padding_type(kernel_params, input_shape, node.output_shape)
         # Only emit the padding if it's not the default value.
-        padding = {'padding': padding} if padding != network.DEFAULT_PADDING else {}
-        return kernel_params, padding
+        kwargs = {}
+        if padding != network.DEFAULT_PADDING:
+            kwargs['padding'] = padding
+        if not kernel_params[-1]:
+            kwargs['bias_term'] = False
+        return kernel_params, kwargs
 
     def relu_adapted_node(self, node, *args, **kwargs):
         # Opt-out instead of opt-in as ReLU(op) is the common case.
@@ -98,6 +102,8 @@ class TensorFlowMapper(NodeMapper):
         channels_output, channels_input, height, width = node.data_shape
         batch_size, c_o, output_height, output_width = node.output_shape
         (kernel_params, kwargs) = self.get_kernel_params(node)
+        # bias term info
+        node.layer.kernel_parameters.
         assert kernel_params.kernel_h == height
         assert kernel_params.kernel_w == width
         assert channels_output == c_o
@@ -118,6 +124,7 @@ class TensorFlowMapper(NodeMapper):
 
         :param node: Node object
         """
+        # TODO
         return TensorFlowNode('crop')
 
     def map_relu(self, node):

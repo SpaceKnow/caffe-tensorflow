@@ -118,7 +118,6 @@ class LayerAdapter(object):
         try:
             return getattr(self.layer, name)
         except AttributeError:
-            print traceback.print_exc()
             raise NodeDispatchError('Caffe parameters not found for layer kind: %s' % self.kind)
 
     @staticmethod
@@ -148,7 +147,10 @@ class LayerAdapter(object):
         s_w = self.get_kernel_value(params.stride_w, params.stride, 1, default=1)
         p_h = self.get_kernel_value(params.pad_h, params.pad, 0, default=0)
         p_w = self.get_kernel_value(params.pad_h, params.pad, 1, default=0)
-        return KernelParameters(k_h, k_w, s_h, s_w, p_h, p_w)
+        bias_term = self.get_kernel_value(params.bias_term, params.bias_term, 0, default=True)
+        if bias_term == "false":
+            bias_term = False
+        return KernelParameters(k_h, k_w, s_h, s_w, p_h, p_w, bias_term)
 
 KernelParameters = namedtuple('KernelParameters',
                               ['kernel_h',
@@ -156,4 +158,5 @@ KernelParameters = namedtuple('KernelParameters',
                                'stride_h',
                                'stride_w',
                                'pad_h',
-                               'pad_w'])
+                               'pad_w',
+                               'bias_term'])
